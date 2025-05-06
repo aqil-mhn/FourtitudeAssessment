@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fourtitude_assessment/configs/app_language.dart';
 import 'package:fourtitude_assessment/configs/app_navigation.dart';
 import 'package:fourtitude_assessment/modules/logins/login_screen.dart';
@@ -42,21 +43,24 @@ class _AppState extends State<App> {
     );
     return SessionTimeoutManager(
       sessionConfig: sessionConfig,
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        navigatorKey: NavKey.navKey,
-        home: LoginScreen(),
-        localizationsDelegates: [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate
-        ],
-        locale: Provider.of<AppLanguage>(context).appLocal,
-        supportedLocales: [
-          Locale('en'),
-          Locale('my')
-        ],
+      child: ScreenUtilInit(
+        designSize: const Size(300, 690),
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          navigatorKey: NavKey.navKey,
+          home: LoginScreen(),
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate
+          ],
+          locale: Provider.of<AppLanguage>(context).appLocal,
+          supportedLocales: [
+            Locale('en'),
+            Locale('my')
+          ],
+        ),
       ),
     );
   }
