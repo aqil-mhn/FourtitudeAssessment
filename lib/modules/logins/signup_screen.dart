@@ -1,47 +1,42 @@
+import 'dart:developer';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fourtitude_assessment/configs/app_theme.dart';
-import 'package:fourtitude_assessment/modules/home_screen.dart';
-import 'package:fourtitude_assessment/modules/logins/signup_screen.dart';
 import 'package:fourtitude_assessment/modules/services/firebase_auth_services.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmPasswordController = TextEditingController();
 
   FirebaseAuthServices auth = FirebaseAuthServices();
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final ValueNotifier<bool> _hidePassword = ValueNotifier<bool>(true);
-  final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _hideConfirmPassword = ValueNotifier<bool>(true);
 
-  Future<void> handleLogin(String email, String password) async {
-    final user = await auth.logIn(
+  void handleSignUp(String email, String password) async {
+    final user = await auth.signUp(
       email.trim(),
       password.trim()
     );
 
     if (user != null) {
-      var prefs = await SharedPreferences.getInstance();
-      prefs.setString("userUID", user.uid);
-      prefs.setBool("isUserLoggedIn", true);
-
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           duration: Duration(milliseconds: 600),
           content: Text(
-            "Login Successful as ${user.email}"
+            "Sign Up Successful as ${user.email}"
           ),
           padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
           margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -52,18 +47,14 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const HomeScreen(),
-        ),
-      );
+      Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           duration: Duration(milliseconds: 600),
           content: Text(
-            "Wrong email or password. Please try again"
+            "Sign Up failed. Please try again"
           ),
           padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
           margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -84,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.transparent,
         centerTitle: true,
         title: Text(
-          "Login",
+          "Sign Up",
           style: TextStyle(
             fontSize: 30
           ),
@@ -108,9 +99,10 @@ class _LoginScreenState extends State<LoginScreen> {
               Form(
                 key: _formKey,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     TextFormField(
-                      controller: emailController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return "Please enter email";
@@ -118,9 +110,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
                           return "Enter a valid email address";
                         }
-                    
+
                         return null;
                       },
+                      controller: emailController,
                       decoration: InputDecoration(
                         // hintText: "Username",
                         labelText: "Email",
@@ -136,7 +129,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       valueListenable: _hidePassword,
                       builder: (context, value, child) {
                         return TextFormField(
-                          controller: passwordController,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return "Please enter password";
@@ -144,16 +136,54 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             return null;
                           },
-                          obscureText: _hidePassword.value,
+                          controller: passwordController,
+                          obscureText:  _hidePassword.value,
                           keyboardType: TextInputType.text,
                           decoration: InputDecoration(
-                            labelText: "Password",
                             suffixIcon: IconButton(
                               onPressed: () {
                                 _hidePassword.value = !_hidePassword.value;
                               },
                               icon: Icon(
                                 _hidePassword.value ? Icons.visibility_off_outlined : Icons.visibility_outlined 
+                              ),
+                            ),
+                            labelText: "Password",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)
+                            )
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    ValueListenableBuilder(
+                      valueListenable: _hideConfirmPassword,
+                      builder: (context, value, child) {
+                        return TextFormField(
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Please retype the password";
+                            }
+                            if (value != passwordController.text) {
+                              return "Must be same as password";
+                            }
+
+                            return null;
+                          },
+                          controller: confirmPasswordController,
+                          obscureText: _hideConfirmPassword.value,
+                          keyboardType: TextInputType.text,
+                          decoration: InputDecoration(
+                            labelText: "Confirm Password",
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                _hideConfirmPassword.value = !_hideConfirmPassword.value;
+                              },
+                              icon: Icon(
+                                _hideConfirmPassword.value ? Icons.visibility_off_outlined : Icons.visibility_outlined
                               ),
                             ),
                             border: OutlineInputBorder(
@@ -163,68 +193,25 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       },
                     ),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          handleSignUp(emailController.text, passwordController.text);
+                        }
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(const Color.fromARGB(255, 98, 124, 119)),
+                        foregroundColor: WidgetStatePropertyAll(Colors.white)
+                      ),
+                      child: Text(
+                        "Sign Up"
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  text: "Don't have an account? ",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16
-                  ),
-                  children: [
-                    TextSpan(
-                      text: "Sign up",
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 16
-                      ),
-                      recognizer: TapGestureRecognizer()..onTap = () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const SignupScreen(),
-                          ),
-                        );
-                      }
-                    )
-                  ]
-                ),
-              ),
-              SizedBox(
-                height: 30,
-              ),
-              ValueListenableBuilder(
-                valueListenable: isLoading,
-                builder: (context, value, child) {
-                  return TextButton(
-                    onPressed: value ? null : () async {
-                      if (_formKey.currentState!.validate()) {
-                        isLoading.value = true;
-                        await handleLogin(emailController.text, passwordController.text);
-                        isLoading.value = false;
-                      }
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStatePropertyAll(const Color.fromARGB(255, 98, 124, 119)),
-                      foregroundColor: WidgetStatePropertyAll(Colors.white)
-                    ),
-                    child: value ? SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    ) : Text(
-                      "Login"
-                    ),
-                  );
-                },
               )
             ],
           ),

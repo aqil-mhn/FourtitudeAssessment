@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "90543510729",
+    "project_id": "fourtitudeassessment",
+    "storage_bucket": "fourtitudeassessment.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:90543510729:android:055dde3d4b2e7440a76918",
+        "android_client_info": {
+          "package_name": "com.example.fourtitude_assessment"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "90543510729-2ou7a89921eudcgf2d3kpg2sca1o1i1g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQDqHSCa4dtM1EGsx0EWkj_5MzJwC4xrc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "90543510729-2ou7a89921eudcgf2d3kpg2sca1o1i1g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:90543510729:android:055dde3d4b2e7440a76918",
+        "android_client_info": {
+          "package_name": "com.example.fourtitude_assessment.development"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "90543510729-2ou7a89921eudcgf2d3kpg2sca1o1i1g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQDqHSCa4dtM1EGsx0EWkj_5MzJwC4xrc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "90543510729-2ou7a89921eudcgf2d3kpg2sca1o1i1g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
