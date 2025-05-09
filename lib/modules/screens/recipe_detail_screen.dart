@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fourtitude_assessment/configs/app_database.dart';
+import 'package:fourtitude_assessment/modules/screens/recipe_form_screen.dart';
 import 'package:sqflite/sqflite.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
@@ -62,8 +63,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
             TextButton(
               onPressed: () {
                 _deleteRecipe();
-                Navigator.of(context).pop(); // Close dialog
-                Navigator.of(context).pop(); // Return to previous screen
+                Navigator.of(context).pop(true); // Close dialog
+                Navigator.of(context).pop(true); // Return to previous screen
               },
               child: Text(
                 'Delete',
@@ -164,7 +165,18 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                               flex: 1,
                               child: OutlinedButton(
                                 onPressed: () {
-                                  
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => RecipeFormScreen(
+                                        isUpdate: true,
+                                        data: widget.recipe,
+                                      ),
+                                    ),
+                                  ).then((value) {
+                                    if (value == true) {
+                                      init();
+                                    }
+                                  });
                                 },
                                 child: Text(
                                   'Update',

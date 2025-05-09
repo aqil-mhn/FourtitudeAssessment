@@ -105,7 +105,8 @@ Future<void> insertLDB(Map<String, dynamic> meal, String imagePath) async {
           'type': "${meal['strCategory']}",
           // 'datasource': jsonEncode(user),
           'dateInsert': DateTime.now().millisecondsSinceEpoch.toString(),
-          'imagePath': imagePath
+          'imagePath': imagePath,
+          'source': "API"
         },
         where: 'id=?',
         whereArgs: [meal['idMeal']]
@@ -115,13 +116,14 @@ Future<void> insertLDB(Map<String, dynamic> meal, String imagePath) async {
         'recipes',
         conflictAlgorithm: ConflictAlgorithm.replace,
         {
-          'id': meal['id'],
+          'id': meal['idMeal'],
           'datasource': jsonEncode(meal),
           'name': "${meal['strMeal']}",
           'type': "${meal['strCategory']}",
           // 'datasource': jsonEncode(user),
           'dateInsert': DateTime.now().millisecondsSinceEpoch.toString(),
-          'imagePath': imagePath
+          'imagePath': imagePath,
+          'source': "API"
         },
       );
     }

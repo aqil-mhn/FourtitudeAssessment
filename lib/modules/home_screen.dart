@@ -8,6 +8,7 @@ import 'package:fourtitude_assessment/commons/string_casing.dart';
 import 'package:fourtitude_assessment/configs/app_database.dart';
 import 'package:fourtitude_assessment/modules/logins/login_screen.dart';
 import 'package:fourtitude_assessment/modules/screens/recipe_detail_screen.dart';
+import 'package:fourtitude_assessment/modules/screens/recipe_form_screen.dart';
 import 'package:fourtitude_assessment/modules/services/firebase_auth_services.dart';
 import 'package:fourtitude_assessment/modules/services/recipes_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,12 +26,12 @@ class _HomeScreenState extends State<HomeScreen> {
   final ValueNotifier<bool> _isFilter = ValueNotifier<bool>(false);
   final ValueNotifier<String> _typeSelected = ValueNotifier<String>('');
   final ValueNotifier<List<Map<String, dynamic>>> _filteredRecipes = ValueNotifier<List<Map<String, dynamic>>>([]);
+  final ValueNotifier<Map<String, dynamic>> _featuredRecipe = ValueNotifier<Map<String, dynamic>>({});
   FirebaseAuthServices auth = FirebaseAuthServices();
   TextEditingController searchController = TextEditingController();
   
   List<Map<String, dynamic>> recipes = [];
   List<DropdownMenuItem> categories = [];
-  Map<String, dynamic> featuredRecipe = {};
 
   @override
   void initState() {
@@ -62,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (recipes.isNotEmpty) {
       final random = math.Random();
       final randomIndex = random.nextInt(recipes.length);
-      featuredRecipe = recipes[randomIndex];
+      _featuredRecipe.value = recipes[randomIndex];
       _filteredRecipes.value = List.from(recipes);
 
       Set<String> uniqueCategories = recipes.map((recipe) => recipe['type'].toString()).toSet();
@@ -136,6 +137,32 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
+          InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => RecipeFormScreen(
+                    isUpdate: false,
+                    data: {},
+                  ),
+                ),
+              ).then((value) {
+                if (value == true) {
+                  init();
+                }
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.white
+              ),
+              child: Text(
+                "Add Recipe"
+              ),
+            ),
+          ),
           IconButton(
             onPressed: () {
               handleSignOut();
@@ -213,68 +240,60 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 child: ButtonTheme(
                                   alignedDropdown: true,
-                                  child: DropdownButton(
-                                    menuMaxHeight: 300,
-                                    alignment: AlignmentDirectional.centerStart,
-                                    isExpanded: true,
-                                    isDense: true,
-                                    underline: Container(),
-                                    borderRadius: BorderRadius.circular(10),
-                                    dropdownColor: Colors.white,
-                                    padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                    hint: ValueListenableBuilder(
-                                      valueListenable: _typeSelected,
-                                      builder: (context, value, child) {
-                                        if (value == '') {
-                                          return Text(
-                                            "Filter by category",
-                                            style: TextStyle(
-                                              color: Colors.black
-                                            ),
-                                          );
-                                        }
-                                        return Text(
-                                          value,
+                                  child: ValueListenableBuilder(
+                                    valueListenable: _typeSelected,
+                                    builder: (context, value, child) {
+                                      return DropdownButton(
+                                        menuMaxHeight: 300,
+                                        alignment: AlignmentDirectional.centerStart,
+                                        isExpanded: true,
+                                        isDense: true,
+                                        underline: Container(),
+                                        borderRadius: BorderRadius.circular(10),
+                                        dropdownColor: Colors.white,
+                                        padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                        hint: Text(
+                                          value == '' ? "Filter by category" : value,
                                           style: TextStyle(
                                             color: Colors.black
                                           ),
-                                        );
-                                      },
-                                    ),
-                                    items: categories,
-                                    onChanged: (value) {
-                                      _typeSelected.value = value;
-                                      filterRecipes(value);
+                                        ),
+                                        items: categories,
+                                        onChanged: (value) {
+                                          _typeSelected.value = value;
+                                          filterRecipes(value);
+                                        },
+                                        icon: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (value != '')
+                                            IconButton(
+                                              padding: EdgeInsets.all(0),
+                                              onPressed: () {
+                                                _typeSelected.value = '';
+                                                filterRecipes('');
+                                              },
+                                              icon: Icon(
+                                                Icons.close
+                                              ),
+                                            ),
+                                            IconButton(
+                                              padding: EdgeInsets.all(0),
+                                              onPressed: () {
+                                                _isFilter.value = !_isFilter.value;
+                                              },
+                                              icon: Icon(
+                                                Icons.filter_alt
+                                              ),
+                                            ),
+                                            Icon(
+                                              Icons.arrow_drop_down
+                                            )
+                                          ],
+                                        ),
+                                      );
                                     },
-                                    icon: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (_typeSelected.value != '')
-                                        IconButton(
-                                          padding: EdgeInsets.all(0),
-                                          onPressed: () {
-                                            _typeSelected.value = '';
-                                            filterRecipes('');
-                                          },
-                                          icon: Icon(
-                                            Icons.close
-                                          ),
-                                        ),
-                                        IconButton(
-                                          padding: EdgeInsets.all(0),
-                                          onPressed: () {
-                                            _isFilter.value = !_isFilter.value;
-                                          },
-                                          icon: Icon(
-                                            Icons.filter_alt
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.arrow_drop_down
-                                        )
-                                      ],
-                                    ),
-                                  ),
+                                  )
                                 ),
                               );
                             }
@@ -381,7 +400,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 recipe: data,
                                               )
                                             )
-                                          );
+                                          ).then((value) {
+                                            if (value == true) {
+                                              initLDB();
+                                            }
+                                          });
                                         },
                                       ),
                                     );
@@ -408,87 +431,96 @@ class _HomeScreenState extends State<HomeScreen> {
                                     color: Colors.white
                                   ),
                                 ),
-                                Card(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)
-                                  ),
-                                  elevation: 4,
-                                  child: InkWell(
-                                    onTap: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => RecipeDetailScreen(
-                                            recipe: featuredRecipe,
-                                          )
-                                        )
-                                      );
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Expanded(
-                                            flex: 1,
-                                            child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(10),
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  // borderRadius: BorderRadius.circular(10)
-                                                ),
-                                                child: Image.file(
-                                                  File('${featuredRecipe['imagePath']}'),
-                                                  fit: BoxFit.cover,
+                                ValueListenableBuilder(
+                                  valueListenable: _featuredRecipe,
+                                  builder: (context, value, child) {
+                                    return Card(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10)
+                                      ),
+                                      elevation: 4,
+                                      child: InkWell(
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => RecipeDetailScreen(
+                                                recipe: _featuredRecipe.value,
+                                              )
+                                            )
+                                          ).then((value) {
+                                            if (value == true) {
+                                              initLDB();
+                                            }
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                flex: 1,
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      // borderRadius: BorderRadius.circular(10)
+                                                    ),
+                                                    child: Image.file(
+                                                      File('${_featuredRecipe.value['imagePath']}'),
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
-                                            ),
+                                              SizedBox(
+                                                width: 10,
+                                              ),
+                                              Expanded(
+                                                flex: 1,
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "${_featuredRecipe.value['name']?.toString().toUpperCase() ?? "-"}",
+                                                      style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: const Color.fromARGB(255, 98, 124, 119)
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${_featuredRecipe.value['type']?.toString().toTitleCase() ?? "-"}",
+                                                      style: TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.normal,
+                                                        color: Colors.grey
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "Main Ingredient:",
+                                                      style: TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight: FontWeight.normal
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      _formatIngredients(jsonDecode(_featuredRecipe.value['datasource'])),
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.normal
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            ],
                                           ),
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                          Expanded(
-                                            flex: 1,
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  "${featuredRecipe['name']?.toString().toUpperCase() ?? "-"}",
-                                                  style: TextStyle(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: const Color.fromARGB(255, 98, 124, 119)
-                                                  ),
-                                                ),
-                                                Text(
-                                                  "${featuredRecipe['type']?.toString().toTitleCase() ?? "-"}",
-                                                  style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.normal,
-                                                    color: Colors.grey
-                                                  ),
-                                                ),
-                                                Text(
-                                                  "Main Ingredient:",
-                                                  style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.normal
-                                                  ),
-                                                ),
-                                                Text(
-                                                  _formatIngredients(jsonDecode(featuredRecipe['datasource'])),
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.normal
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        ],
+                                        ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  },
                                 ),
                                 SizedBox(
                                   height: 20,
@@ -543,7 +575,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 recipe: recipe,
                                               )
                                             )
-                                          );
+                                          ).then((value) {
+                                            if (value == true) {
+                                              initLDB();
+                                            }
+                                          });
                                         },
                                         child: Container(
                                           child: Column(

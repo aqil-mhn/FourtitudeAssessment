@@ -12,7 +12,7 @@ Future<void> initiateDatabase() async {
     version: version
   );
 
-  String recipe = "CREATE TABLE IF NOT EXISTS recipes (id TEXT PRIMARY KEY, datasource TEXT, name TEXT, type TEXT, imagePath TEXT, dateInsert TEXT)";
+  String recipe = "CREATE TABLE IF NOT EXISTS recipes (id TEXT PRIMARY KEY, datasource TEXT, name TEXT, type TEXT, source TEXT, imagePath TEXT, dateInsert TEXT)";
   await database.execute(recipe);
 }
 
