@@ -17,6 +17,11 @@ class RecipeDetailScreen extends StatefulWidget {
 
 class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   Map<String, dynamic> datasource = {};
+  Map<String, dynamic> recipe= {};
+  final List<String> _tabs = [
+    'Ingredients',
+    'Instructions'
+  ];
 
   @override
   void initState() {
@@ -25,7 +30,24 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     init();
   }
   init() async {
-    datasource = jsonDecode(widget.recipe['datasource']);
+    recipe = widget.recipe;
+    datasource = jsonDecode(recipe['datasource']);
+  }
+
+  refreshData() async {
+    final db = await openDatabase(dbPath, version: 1);
+
+    final result = await db.query(
+      'recipes',
+      where: "id = ?",
+      whereArgs: [widget.recipe['id']]
+    );
+    if (result.isNotEmpty) {
+      setState(() {
+        recipe = result.first;
+        datasource = jsonDecode(recipe['datasource']);
+      });
+    }
   }
 
   Future<void> _deleteRecipe() async {
@@ -34,11 +56,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       await db.delete(
         'recipes',
         where: 'id = ?',
-        whereArgs: [widget.recipe['id']],
+        whereArgs: [recipe['id']],
       );
       
       // Delete the image file
-      final imageFile = File(widget.recipe['imagePath']);
+      final imageFile = File(recipe['imagePath']);
       if (await imageFile.exists()) {
         await imageFile.delete();
       }
@@ -79,6 +101,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 98, 124, 119),
         leading: IconButton(
@@ -86,7 +109,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
             Icons.arrow_back,
             color: Colors.white,
           ),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pop(true),
         ),
         title: Text(
           "Recipe Detail",
@@ -95,11 +118,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Stack(
-              clipBehavior: Clip.none,
+      body: SingleChildScrollView(
+        // padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+        child: Column(
+          children: [
+            Column(
               children: [
                 // Image Section
                 Container(
@@ -107,20 +130,17 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   width: double.infinity,
                   child: ClipRRect(
                     borderRadius: BorderRadius.vertical(
-                      bottom: Radius.circular(10)
+                      bottom: Radius.circular(10),
+                      // top: Radius.circular(10)
                     ),
                     child: Image.file(
-                      File(widget.recipe['imagePath']),
+                      File(recipe['imagePath']),
                       fit: BoxFit.cover,
                     ),
                   ),
                 ),
-                
-                // Content Section
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 250,
+                Transform.translate(
+                  offset: Offset(0, -50),
                   child: Container(
                     padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -141,7 +161,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.recipe['name'] ?? '-',
+                          recipe['name'] ?? '-',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -159,29 +179,104 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                         SizedBox(
                           height: 20,
                         ),
+                        DefaultTabController(
+                          length: 2,
+                          child: Column(
+                            children: [
+                              TabBar(
+                                labelColor: const Color.fromARGB(255, 98, 124, 119),
+                                unselectedLabelColor: Colors.grey,
+                                indicatorColor: const Color.fromARGB(255, 98, 124, 119),
+                                tabs: _tabs.map((String tab) => Tab(text: tab)).toList(),
+                              ),
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxHeight: MediaQuery.of(context).size.height * 0.4
+                                ),
+                                child: TabBarView(
+                                  children: [
+                                    // Ingredients Tab
+                                    SingleChildScrollView(
+                                      child: Column(
+                                        children: List.generate(20, (index) {
+                                          final ingredient = datasource['strIngredient${index + 1}'];
+                                          final measure = datasource['strMeasure${index + 1}'];
+                                          
+                                          if (ingredient != null && ingredient.isNotEmpty) {
+                                            return Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 4),
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    '•',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: 8),
+                                                  Expanded(  // Add this to handle long text
+                                                    child: Text(
+                                                      measure != null && measure.isNotEmpty 
+                                                        ? '$measure $ingredient'
+                                                        : ingredient,
+                                                      style: TextStyle(fontSize: 14),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          }
+                                          return SizedBox.shrink();
+                                        }),
+                                      ),
+                                    ),
+                                    SingleChildScrollView(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(top: 8),
+                                        child: Text(
+                                          datasource['strInstructions'] ?? '-',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: 30,
+                        ),
                         Row(
                           children: [
                             Expanded(
                               flex: 1,
                               child: OutlinedButton(
+                                style: ButtonStyle(
+                                  side: WidgetStateProperty.all(BorderSide(
+                                    color: const Color.fromARGB(255, 98, 124, 119)
+                                  ))
+                                ),
                                 onPressed: () {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (context) => RecipeFormScreen(
                                         isUpdate: true,
-                                        data: widget.recipe,
+                                        data: recipe,
                                       ),
                                     ),
                                   ).then((value) {
                                     if (value == true) {
-                                      init();
+                                      refreshData();
                                     }
                                   });
                                 },
                                 child: Text(
                                   'Update',
                                   style: TextStyle(
-                                    color: Colors.black
+                                    color: const Color.fromARGB(255, 98, 124, 119)
                                   ),
                                 ),
                               ),
@@ -218,8 +313,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -229,7 +324,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       padding: EdgeInsets.fromLTRB(20, 5, 20, 5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: Colors.grey
+        color: const Color.fromARGB(255, 98, 124, 119)
       ),
       child: Text(
         title.toString().toUpperCase(),

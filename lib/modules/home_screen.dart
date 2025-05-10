@@ -148,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ).then((value) {
                 if (value == true) {
-                  init();
+                  initLDB();
                 }
               });
             },
@@ -482,13 +482,36 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                                   mainAxisAlignment: MainAxisAlignment.start,
                                                   children: [
-                                                    Text(
-                                                      "${_featuredRecipe.value['name']?.toString().toUpperCase() ?? "-"}",
-                                                      style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: const Color.fromARGB(255, 98, 124, 119)
-                                                      ),
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            "${_featuredRecipe.value['name']?.toString().toUpperCase() ?? "-"}",
+                                                            style: TextStyle(
+                                                              fontSize: 20,
+                                                              fontWeight: FontWeight.bold,
+                                                              color: const Color.fromARGB(255, 98, 124, 119)
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Container(
+                                                          padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                                          margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                                          decoration: BoxDecoration(
+                                                            color: const Color.fromARGB(255, 98, 124, 119),
+                                                            borderRadius: BorderRadius.circular(10)
+                                                          ),
+                                                          child: Text(
+                                                            "${_featuredRecipe.value['source']?.toString().toUpperCase() ?? "-"}",
+                                                            style: TextStyle(
+                                                              fontSize: 10,
+                                                              fontWeight: FontWeight.normal,
+                                                              color: Colors.white
+                                                            ),
+                                                          ),
+                                                        )
+                                                      ],
                                                     ),
                                                     Text(
                                                       "${_featuredRecipe.value['type']?.toString().toTitleCase() ?? "-"}",
@@ -601,7 +624,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 ),
                                               ),
                                               Expanded(
-                                                flex: 1,
+                                                flex: 2,
                                                 child: Padding(
                                                   padding: const EdgeInsets.all(8.0),
                                                   child: Column(
@@ -624,6 +647,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           color: Colors.grey,
                                                         ),
                                                       ),
+                                                      Container(
+                                                        padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                                        margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                                        decoration: BoxDecoration(
+                                                          color: const Color.fromARGB(255, 98, 124, 119),
+                                                          borderRadius: BorderRadius.circular(10)
+                                                        ),
+                                                        child: Text(
+                                                          "${recipe['source']?.toString().toUpperCase() ?? "-"}",
+                                                          style: TextStyle(
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.normal,
+                                                            color: Colors.white
+                                                          ),
+                                                        ),
+                                                      )
                                                     ],
                                                   ),
                                                 ),

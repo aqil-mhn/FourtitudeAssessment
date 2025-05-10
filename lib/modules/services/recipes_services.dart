@@ -12,7 +12,7 @@ import 'package:sqflite/sqflite.dart';
 Future<List<Map<String, dynamic>>> getRecipes() async {
   List<Map<String, dynamic>> recipes = [];
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 2; i++) {
     try {
       final response = await http.get(
         Uri.parse("https://www.themealdb.com/api/json/v1/1/random.php")
@@ -31,7 +31,7 @@ Future<List<Map<String, dynamic>>> getRecipes() async {
               imagePath = value;
             });
 
-            insertLDB(meal, imagePath);
+            await insertLDB(meal, imagePath);
           }
         default:
           Map<String, dynamic> data = {};
