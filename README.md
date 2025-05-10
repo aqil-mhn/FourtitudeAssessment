@@ -46,13 +46,7 @@ git clone https://github.com/your-username/FourtitudeAssessment.git
 flutter pub get
 ```
 
-3. Configure Firebase:
-   - Create a new Firebase project
-   - Add Android/iOS apps in Firebase console
-   - Download and add google-services.json to android/app/
-   - Add GoogleService-Info.plist to ios/Runner/
-
-4. Setup local database:
+3. Setup local database:
    - The app will automatically create required tables on first run
    - No additional setup needed for SQLite
 
@@ -91,15 +85,3 @@ CREATE TABLE recipes (
     dateInsert TEXT
 )
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details
