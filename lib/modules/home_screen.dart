@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fourtitude_assessment/commons/string_casing.dart';
 import 'package:fourtitude_assessment/configs/app_database.dart';
@@ -378,12 +379,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                           child: Builder(
                                             builder: (context) {
                                               try {
-                                                return Container(
-                                                  child: Image.file(
-                                                    File(data['imagePath']),
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                );
+                                                if (kIsWeb) {
+                                                  return Container(
+                                                    child: Image.network(
+                                                      data['imageLink'],
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (context, error, stackTrace) {
+                                                        return Icon(Icons.food_bank);
+                                                      },
+                                                    ),
+                                                  );
+                                                } else {
+                                                  return Container(
+                                                    child: Image.file(
+                                                      File(data['imagePath']),
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (context, error, stackTrace) {
+                                                        return Icon(Icons.food_bank);
+                                                      },
+                                                    ),
+                                                  );
+                                                }
                                               } catch (e) {
                                                 return Icon(
                                                   Icons.food_bank,
@@ -434,114 +450,61 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ValueListenableBuilder(
                                   valueListenable: _featuredRecipe,
                                   builder: (context, value, child) {
-                                    return Card(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10)
-                                      ),
-                                      elevation: 4,
-                                      child: InkWell(
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (context) => RecipeDetailScreen(
-                                                recipe: _featuredRecipe.value,
-                                              )
-                                            )
-                                          ).then((value) {
-                                            if (value == true) {
-                                              initLDB();
-                                            }
-                                          });
-                                        },
-                                        child: Container(
-                                          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                          child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Expanded(
-                                                flex: 1,
-                                                child: ClipRRect(
-                                                  borderRadius: BorderRadius.circular(10),
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      // borderRadius: BorderRadius.circular(10)
-                                                    ),
-                                                    child: Image.file(
-                                                      File('${_featuredRecipe.value['imagePath']}'),
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: 10,
-                                              ),
-                                              Expanded(
-                                                flex: 1,
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                                  mainAxisAlignment: MainAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    return LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        final isLargeScreen = constraints.maxWidth > 800;
+                                        
+                                        return Card(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10)
+                                          ),
+                                          elevation: 4,
+                                          child: InkWell(
+                                            onTap: () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (context) => RecipeDetailScreen(
+                                                    recipe: _featuredRecipe.value,
+                                                  )
+                                                )
+                                              ).then((value) {
+                                                if (value == true) {
+                                                  initLDB();
+                                                }
+                                              });
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.all(10),
+                                              child: isLargeScreen
+                                                  ? Row(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
                                                       children: [
                                                         Expanded(
-                                                          child: Text(
-                                                            "${_featuredRecipe.value['name']?.toString().toUpperCase() ?? "-"}",
-                                                            style: TextStyle(
-                                                              fontSize: 20,
-                                                              fontWeight: FontWeight.bold,
-                                                              color: const Color.fromARGB(255, 98, 124, 119)
-                                                            ),
-                                                          ),
+                                                          flex: 2,
+                                                          child: _buildFeaturedImage(),
                                                         ),
-                                                        Container(
-                                                          padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                                          margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                                          decoration: BoxDecoration(
-                                                            color: const Color.fromARGB(255, 98, 124, 119),
-                                                            borderRadius: BorderRadius.circular(10)
-                                                          ),
-                                                          child: Text(
-                                                            "${_featuredRecipe.value['source']?.toString().toUpperCase() ?? "-"}",
-                                                            style: TextStyle(
-                                                              fontSize: 10,
-                                                              fontWeight: FontWeight.normal,
-                                                              color: Colors.white
-                                                            ),
-                                                          ),
-                                                        )
+                                                        SizedBox(width: 20),
+                                                        Expanded(
+                                                          flex: 3,
+                                                          child: _buildFeaturedContent(),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  : Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                      children: [
+                                                        AspectRatio(
+                                                          aspectRatio: 16 / 9,
+                                                          child: _buildFeaturedImage(),
+                                                        ),
+                                                        SizedBox(height: 10),
+                                                        _buildFeaturedContent(),
                                                       ],
                                                     ),
-                                                    Text(
-                                                      "${_featuredRecipe.value['type']?.toString().toTitleCase() ?? "-"}",
-                                                      style: TextStyle(
-                                                        fontSize: 15,
-                                                        fontWeight: FontWeight.normal,
-                                                        color: Colors.grey
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      "Main Ingredient:",
-                                                      style: TextStyle(
-                                                        fontSize: 15,
-                                                        fontWeight: FontWeight.normal
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      _formatIngredients(jsonDecode(_featuredRecipe.value['datasource'])),
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.normal
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              )
-                                            ],
+                                            ),
                                           ),
-                                        ),
-                                      ),
+                                        );
+                                      },
                                     );
                                   },
                                 ),
@@ -573,104 +536,131 @@ class _HomeScreenState extends State<HomeScreen> {
                             ValueListenableBuilder(
                               valueListenable: _filteredRecipes,
                               builder: (context, value, child) {
-                                return GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    childAspectRatio: 0.75,
-                                    crossAxisSpacing: 10,
-                                    mainAxisSpacing: 10
-                                  ),
-                                  itemCount: value.length, 
-                                  itemBuilder: (context, index) {
-                                    final recipe = value[index];
-                                    return Card(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10)
+                                return LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    int crossAxisCount = constraints.maxWidth > 800 ? 4 : 2;
+                                    double childAspectRatio = constraints.maxWidth > 800 ? 0.85 : 0.75;
+                                    return GridView.builder(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: crossAxisCount,
+                                        childAspectRatio: childAspectRatio,
+                                        crossAxisSpacing: 10,
+                                        mainAxisSpacing: 10
                                       ),
-                                      elevation: 4,
-                                      child: InkWell(
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (context) => RecipeDetailScreen(
-                                                recipe: recipe,
-                                              )
-                                            )
-                                          ).then((value) {
-                                            if (value == true) {
-                                              initLDB();
-                                            }
-                                          });
-                                        },
-                                        child: Container(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                                            children: [
-                                              Expanded(
-                                                flex: 2,
-                                                child: Container(
-                                                  padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-                                                  child: ClipRRect(
-                                                    borderRadius: BorderRadius.vertical(
-                                                      top: Radius.circular(10)
-                                                    ),
-                                                    child: Image.file(
-                                                      File('${recipe['imagePath']}'),
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        "${recipe['name']?.toString().toUpperCase() ?? '-'}",
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow.ellipsis,
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: const Color.fromARGB(255, 98, 124, 119)
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "${recipe['type']?.toString().toTitleCase() ?? '-'}",
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          color: Colors.grey,
-                                                        ),
-                                                      ),
-                                                      Container(
-                                                        padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                                        margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                                                        decoration: BoxDecoration(
-                                                          color: const Color.fromARGB(255, 98, 124, 119),
-                                                          borderRadius: BorderRadius.circular(10)
-                                                        ),
-                                                        child: Text(
-                                                          "${recipe['source']?.toString().toUpperCase() ?? "-"}",
-                                                          style: TextStyle(
-                                                            fontSize: 10,
-                                                            fontWeight: FontWeight.normal,
-                                                            color: Colors.white
-                                                          ),
-                                                        ),
-                                                      )
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
+                                      itemCount: value.length, 
+                                      itemBuilder: (context, index) {
+                                        final recipe = value[index];
+                                        return Card(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10)
                                           ),
-                                        ),
-                                      ),
+                                          elevation: 4,
+                                          child: InkWell(
+                                            onTap: () {
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (context) => RecipeDetailScreen(
+                                                    recipe: recipe,
+                                                  )
+                                                )
+                                              ).then((value) {
+                                                if (value == true) {
+                                                  initLDB();
+                                                }
+                                              });
+                                            },
+                                            child: Container(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                children: [
+                                                  Expanded(
+                                                    flex: 2,
+                                                    child: Container(
+                                                      padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+                                                      child: ClipRRect(
+                                                        borderRadius: BorderRadius.vertical(
+                                                          top: Radius.circular(10)
+                                                        ),
+                                                        child: Builder(
+                                                          builder: (context) {
+                                                            try {
+                                                              if (kIsWeb) {
+                                                                return Image.network(
+                                                                  recipe['imageLink'] ?? '',
+                                                                  fit: BoxFit.cover,
+                                                                  errorBuilder: (context, error, stackTrace) {
+                                                                    return Icon(Icons.food_bank);
+                                                                  },
+                                                                );
+                                                              } else {
+                                                                return Image.file(
+                                                                  File('${recipe['imagePath']}'),
+                                                                  fit: BoxFit.cover,
+                                                                  errorBuilder: (context, error, stackTrace) {
+                                                                    return Icon(Icons.food_bank);
+                                                                  },
+                                                                );
+                                                              }
+                                                            } catch (e) {
+                                                              return Icon(Icons.food_bank);
+                                                            }
+                                                          },
+                                                        )
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    flex: 2,
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.all(8.0),
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Text(
+                                                            "${recipe['name']?.toString().toUpperCase() ?? '-'}",
+                                                            maxLines: 1,
+                                                            overflow: TextOverflow.ellipsis,
+                                                            style: TextStyle(
+                                                              fontSize: 14,
+                                                              fontWeight: FontWeight.bold,
+                                                              color: const Color.fromARGB(255, 98, 124, 119)
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            "${recipe['type']?.toString().toTitleCase() ?? '-'}",
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              color: Colors.grey,
+                                                            ),
+                                                          ),
+                                                          Container(
+                                                            padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                                            margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                                            decoration: BoxDecoration(
+                                                              color: const Color.fromARGB(255, 98, 124, 119),
+                                                              borderRadius: BorderRadius.circular(10)
+                                                            ),
+                                                            child: Text(
+                                                              "${recipe['source']?.toString().toUpperCase() ?? "-"}",
+                                                              style: TextStyle(
+                                                                fontSize: 10,
+                                                                fontWeight: FontWeight.normal,
+                                                                color: Colors.white
+                                                              ),
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     );
                                   },
                                 );
@@ -705,5 +695,101 @@ class _HomeScreenState extends State<HomeScreen> {
         .toList();
         
     return validIngredients.isEmpty ? '-' : validIngredients.join(', ');
+  }
+
+  Widget _buildFeaturedImage() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        decoration: BoxDecoration(),
+        child: Builder(
+          builder: (context) {
+            try {
+              if (kIsWeb) {
+                return Image.network(
+                  _featuredRecipe.value['imageLink'],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(Icons.food_bank);
+                  },
+                );
+              } else {
+                return Image.file(
+                  File('${_featuredRecipe.value['imagePath']}'),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(Icons.food_bank);
+                  },
+                );
+              }
+            } catch (e) {
+              return Icon(Icons.food_bank);
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeaturedContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                "${_featuredRecipe.value['name']?.toString().toUpperCase() ?? "-"}",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: const Color.fromARGB(255, 98, 124, 119)
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 98, 124, 119),
+                borderRadius: BorderRadius.circular(10)
+              ),
+              child: Text(
+                "${_featuredRecipe.value['source']?.toString().toUpperCase() ?? "-"}",
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white
+                ),
+              ),
+            )
+          ],
+        ),
+        Text(
+          "${_featuredRecipe.value['type']?.toString().toTitleCase() ?? "-"}",
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.normal,
+            color: Colors.grey
+          ),
+        ),
+        Text(
+          "Main Ingredient:",
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.normal
+          ),
+        ),
+        Text(
+          _formatIngredients(jsonDecode(_featuredRecipe.value['datasource'])),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.normal
+          ),
+        ),
+      ],
+    );
   }
 }

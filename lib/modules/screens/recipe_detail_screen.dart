@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fourtitude_assessment/configs/app_database.dart';
 import 'package:fourtitude_assessment/modules/screens/recipe_form_screen.dart';
@@ -133,10 +134,31 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                       bottom: Radius.circular(10),
                       // top: Radius.circular(10)
                     ),
-                    child: Image.file(
-                      File(recipe['imagePath']),
-                      fit: BoxFit.cover,
-                    ),
+                    child: Builder(
+                      builder: (context) {
+                        try {
+                          if (kIsWeb) {
+                            return Image.network(
+                              recipe['imageLink'] ?? '',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(Icons.food_bank);
+                              },
+                            );
+                          } else {
+                            return Image.file(
+                              File('${recipe['imagePath']}'),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(Icons.food_bank);
+                              },
+                            );
+                          }
+                        } catch (e) {
+                          return Icon(Icons.food_bank);
+                        }
+                      },
+                    )
                   ),
                 ),
                 Transform.translate(

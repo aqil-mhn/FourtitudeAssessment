@@ -31,5 +31,9 @@
             "type": "image/png",
             "purpose": "maskable"
         }
-    ]
+    ],
+    "sqlite": {
+        "worker": "sqlite/sqflite_sw.js",
+        "wasm": "sqlite/sqlite3.wasm"
+    }
 }

@@ -15,7 +15,21 @@
                 "--flavor",
                 "development"
             ]
-        }
-
+        },
+        {
+            "name": "Web Development",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "program": "lib/flavors/main_development.dart",
+            "args": [
+                "-d",
+                "chrome",
+                "--web-port=8000",
+                // "--web-renderer=html",
+                "--dart-define=ENVIRONMENT=development"
+            ]
+        },
+        
     ]
 }

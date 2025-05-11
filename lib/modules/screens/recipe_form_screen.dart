@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fourtitude_assessment/configs/app_database.dart';
 import 'package:image_picker/image_picker.dart';
@@ -267,7 +268,31 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
                               child: isUpdate ? ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
                                 child: Container(
-                                  child: Image.file(File(recipeData['imagePath'])),
+                                  child: Builder(
+                                    builder: (context) {
+                                      try {
+                                        if (kIsWeb) {
+                                          return Image.network(
+                                            recipeData['imageLink'] ?? '',
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return Icon(Icons.food_bank);
+                                            },
+                                          );
+                                        } else {
+                                          return Image.file(
+                                            File('${recipeData['imagePath']}'),
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return Icon(Icons.food_bank);
+                                            },
+                                          );
+                                        }
+                                      } catch (e) {
+                                        return Icon(Icons.food_bank);
+                                      }
+                                    },
+                                  ),
                                 ),
                               ) : imageData.isEmpty ? Center(
                                 child: Column(

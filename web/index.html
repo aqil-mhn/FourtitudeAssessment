@@ -23,7 +23,7 @@
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="fourtitude_assessment">
+  <meta name="apple-mobile-web-app-title" content="neoai_assessment">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
@@ -31,8 +31,42 @@
 
   <title>fourtitude_assessment</title>
   <link rel="manifest" href="manifest.json">
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    var sqlite3InitModule;
+    window.sqlite3InitModule = sqlite3InitModule;
+  </script>
+  <script src="sqlite/sqlite3.js"></script>
+  <script>
+    window.addEventListener('load', function () {
+      _flutter.loader.load({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        }
+      }).then(function(engineInitializer) {
+        return engineInitializer.initializeEngine();
+      }).then(function(appRunner) {
+        return appRunner.runApp();
+      });
+    });
+  </script>
+  
+  <script>
+    const firebaseConfig = {
+      apiKey: 'AIzaSyAJFaOxxqHv8HBzNC5Xir0GsOCeGHXyxK8',
+      authDomain: 'fourtitudeassessment.firebaseapp.com',
+      projectId: 'fourtitudeassessment',
+      storageBucket: 'fourtitudeassessment.firebasestorage.app',
+      messagingSenderId: '90543510729',
+      appId: '1:90543510729:web:e46cbc95e1381d4fa76918'
+    };
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+  </script>
+  <script src="main.dart.js" type="application/javascript"></script>
 </body>
 </html>
