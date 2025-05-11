@@ -6,11 +6,11 @@ A Flutter application for managing recipes with Firebase authentication and SQLi
 
 - User authentication (Sign up/Login)
 - View recipes from TheMealDB API
-- Create, Read, Update, Delete (CRUD) recipe operations
-- Local data persistence using SQLite
+- Create, Read, Update, Delete (CRUD) recipe operations (Only in Mobile)
+- Local data persistence using SQLite (Only in Mobile)
 - Recipe search and filtering
 - Category-based organization
-- Image upload support
+- Image upload support (Only in Mobile)
 - Responsive design
 
 ## State Management & Dependencies
