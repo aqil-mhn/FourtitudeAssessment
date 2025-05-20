@@ -50,11 +50,21 @@ flutter pub get
    - The app will automatically create required tables on first run
    - No additional setup needed for SQLite
 
-## Running the App
+### Development Environment
 
-1. Development mode:
+1. Run using development flavor:
 ```bash
-flutter run lib/flavors/main_development.dart
+flutter run --flavor development -t lib/flavors/main_development.dart
+```
+
+2. Build APK for development:
+```bash
+flutter build apk --flavor development -t lib/flavors/main_development.dart
+```
+
+3. Build App Bundle for development:
+```bash
+flutter build appbundle --flavor development -t lib/flavors/main_development.dart
 ```
 
 ## Project Structure
